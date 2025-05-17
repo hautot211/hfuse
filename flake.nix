@@ -11,7 +11,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
 
         nativeBuildInputs = [
-          hfsutils
+          hfsutils.packages.${system}.default
         ];
         buildInputs = [
           pkgs.gnumake
