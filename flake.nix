@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "nixpkgs";
     flake-utils.url = "flake-utils";
-    hfsutils.url = "git+file:///home/guillaume/Documents/fuse-tests/hfsutils?ref=nix";
+    hfsutils.url = "git+file:///home/guillaume/Documents/fuse-test/hfsutils?ref=nix";
   };
 
   outputs = {self, nixpkgs, flake-utils, hfsutils, ...}:
