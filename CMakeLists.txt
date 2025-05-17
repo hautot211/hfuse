@@ -24,6 +24,16 @@ include_directories(${INCLUDE_DIR})
 add_executable(hfuse
   src/main.c
 )
+
 target_include_directories(hfuse PRIVATE include)
 target_link_directories(hfuse PRIVATE lib)
-target_link_libraries(hfuse PRIVATE hfs)
+target_link_libraries(hfuse PRIVATE hfs fuse3)
+
+
+add_executable(hello
+  src/hello.c
+)
+
+target_include_directories(hello PRIVATE include)
+target_link_directories(hello PRIVATE lib)
+target_link_libraries(hello PRIVATE hfs fuse3)
