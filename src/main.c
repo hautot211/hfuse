@@ -4,6 +4,7 @@
 #define FUSE_USE_VERSION 35
 #include <fuse3/fuse.h>
 
+#include "hfuse_context.h"
 
 int main() {
     hfsvol* volume = hfs_mount("/home/guillaume/Documents/fuse-test/samples/MacOS-9.0.4-fresh.rom", 0, HFS_MODE_RDONLY);
