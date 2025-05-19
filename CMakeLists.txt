@@ -22,6 +22,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR})
 include_directories(${INCLUDE_DIR})
 
 add_executable(hfuse
+  src/hfuse.c
+  src/hfuse_context.c
   src/main.c
 )
 

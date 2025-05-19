@@ -1,18 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <hfs.h>
 #define FUSE_USE_VERSION 35
 #include <fuse3/fuse.h>
 
 #include "hfuse_context.h"
 
-int main() {
-    hfsvol* volume = hfs_mount("/home/guillaume/Documents/fuse-test/samples/MacOS-9.0.4-fresh.rom", 0, HFS_MODE_RDONLY);
+extern const struct fuse_operations hfuse_operations;
 
-    hfsvolent* volume_entity = (hfsvolent*) malloc(sizeof(hfsvolent));
-    hfs_vstat(volume, volume_entity);
-    printf("%s\n", volume_entity->name);
-    free(volume_entity);
+int main(int argc, char *argv[]) {
 
-    hfs_umountall();
+    struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+
+    
+
+    const char* const image_path = "/home/guillaume/Documents/fuse-test/samples/MacOS-9.0.4-fresh.rom";
+    const char* const mountpoint = "/home/guillaume/Documents/fuse-test/hfuse-profiles/hfuse-c/mnt";
+
+    printf("Creating context\n");
+    hfuse_context_t* const context = hfuse_init_context(mountpoint, image_path);
+    fuse_main(args.argc, args.argv, &hfuse_operations, (void*) context);
+    return 0;
 }

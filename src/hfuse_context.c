@@ -1,7 +1,8 @@
-#include <stdlib.h>
-#include <string.h>
-#include <hfs.h>
 #include "hfuse_context.h"
+#include "hfuse.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 struct _hfuse_context_s {
     const char* mountpoint;
@@ -11,36 +12,48 @@ struct _hfuse_context_s {
 };
 
 
-const hfuse_context_t const* hfuse_init_context(const char const* mountpoint, const char const* image_path) {
-    hfuse_context_t const* context = malloc(sizeof(hfuse_context_t));
+hfuse_context_t * const hfuse_init_context(const char* const mountpoint, const char* const image_path) {
+    hfuse_context_t * const context = malloc(sizeof(hfuse_context_t));
     context->mountpoint = strdup(mountpoint);
     context->image_path = strdup(image_path);
-    context->volume = hfs_mount(context->mountpoint, 0, HFS_MODE_RDONLY);
-    context->volume_entity = malloc(sizeof(hfsvolent)); hfs_vstat(context->volume, context->volume_entity);
-
-    return (const hfuse_context_t const*) context;
+    return context;
+    //return (hfuse_context_t const*) context;
 }
 
-void hfuse_destroy_context(const hfuse_context_t const* context) {
-    free(context->volume_entity);
-    free(context->volume);
-    free(context->image_path);
-    free(context->mountpoint);
-    free(context);
+void hfuse_fill_context(hfuse_context_t* const context) {
+
+    context->volume = hfs_mount(context->image_path, 0, HFS_MODE_RDONLY);
+    printf("FINISHED\n");
+
+    hfsvolent* const volume_entity = malloc(sizeof(hfsvolent));
+    hfs_vstat((hfsvol* const) context->volume, volume_entity);
+    context->volume_entity = volume_entity;
 }
 
-const char const* hfuse_get_mountpoint(const hfuse_context_t const context) {
+void hfuse_destroy_context(const hfuse_context_t* const context) {
+    hfs_umountall();
+    free((void*) context->volume_entity);
+    free((void*) context->image_path);
+    free((void*) context->mountpoint);
+    free((void*) context);
+}
+
+hfuse_context_t* const hfuse_get_context() {
+    return (hfuse_context_t* const) fuse_get_context()->private_data;
+}
+
+const char const* hfuse_get_mountpoint(const hfuse_context_t* const context) {
     return context->mountpoint;
 }
 
-const char const* hfuse_get_image_path(const hfuse_context_t const* context) {
+const char const* hfuse_get_image_path(const hfuse_context_t* const context) {
     return context->image_path;
 }
 
-const hfsvol const* hfuse_get_volume(const hfuse_context_t const* context) {
+hfsvol* const hfuse_get_volume(hfuse_context_t* const context) {
     return context->volume;
 }
 
-const hfsvolent const* hfuse_get_volumen_entity(const hfuse_context_t const * context) {
+hfsvolent* const hfuse_get_volumen_entity(hfuse_context_t* const context) {
     return context->volume_entity;
 }

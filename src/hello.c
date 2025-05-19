@@ -87,7 +87,7 @@ static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
  
 static int hello_open(const char *path, struct fuse_file_info *fi)
 {
-        printf("%s\n", path);
+        printf("PATH : %s\n", path);
         if (strcmp(path+1, options.filename) != 0)
                 return -ENOENT;
  
