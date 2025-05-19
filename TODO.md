@@ -5,3 +5,4 @@
     - hfuse_open
     - hfuse_read
 - Unit tests ?
+- parse options
