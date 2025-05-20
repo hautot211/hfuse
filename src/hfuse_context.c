@@ -1,8 +1,8 @@
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "hfuse_context.h"
 #include "hfuse.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 struct _hfuse_context_s {
     const char* mountpoint;
@@ -21,13 +21,15 @@ hfuse_context_t * const hfuse_init_context(const char* const mountpoint, const c
 }
 
 void hfuse_fill_context(hfuse_context_t* const context) {
-
+    printf("CALL hfuse_fill_context\n");
     context->volume = hfs_mount(context->image_path, 0, HFS_MODE_RDONLY);
-    printf("FINISHED\n");
-
+    printf("volume : %p\n", context->volume);
+    
     hfsvolent* const volume_entity = malloc(sizeof(hfsvolent));
     hfs_vstat((hfsvol* const) context->volume, volume_entity);
     context->volume_entity = volume_entity;
+
+    printf("RETURN hfuse_fill_context\n");
 }
 
 void hfuse_destroy_context(const hfuse_context_t* const context) {
@@ -50,10 +52,10 @@ const char const* hfuse_get_image_path(const hfuse_context_t* const context) {
     return context->image_path;
 }
 
-hfsvol* const hfuse_get_volume(hfuse_context_t* const context) {
-    return context->volume;
+hfsvol* const hfuse_get_volume(const hfuse_context_t* const context) {
+    return (hfsvol* const) context->volume;
 }
 
-hfsvolent* const hfuse_get_volumen_entity(hfuse_context_t* const context) {
-    return context->volume_entity;
+hfsvolent* const hfuse_get_volume_entity(const hfuse_context_t* const context) {
+    return (hfsvolent* const) context->volume_entity;
 }
