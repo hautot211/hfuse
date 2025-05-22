@@ -61,6 +61,8 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
 
 
     if(hfs_stat_res != 0) {
+        free((void*) directory_entity);
+        free((void*) mac_path);
         printf("no such thing as %s\n", path);
         // printf("ERROR hfuse_getattr(%s)\n", path);
         return -ENOENT;
@@ -125,6 +127,7 @@ int hfuse_readdir(const char* path, void* buf, fuse_fill_dir_t filler, off_t off
 
             filler(buf, subpath, NULL, next_offset, 0);
             free(subpath);
+            free(directory_entity);
     }
 
 

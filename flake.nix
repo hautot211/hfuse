@@ -29,6 +29,9 @@
       packages.default = hfuse;
       devShells.default = pkgs.mkShell {
         inherit buildInputs nativeBuildInputs;
+        packages = [
+          pkgs.valgrind
+        ];
       };
     }
   );
