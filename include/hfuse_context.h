@@ -1,4 +1,4 @@
-#include <hfs.h>
+#include <hfs/hfs.h>
 
 #ifndef HFUSE_CONTEXT_H
 #define HFUSE_CONTEXT_H

@@ -1,8 +1,12 @@
 #include "hfuse.h"
 #include "hfs_helpers.h"
 #include "hfuse_context.h"
-#include <hfs.h>
+#include "debug_funcs.h"
 
+#include <hfs/libhfs.h>
+#include <hfs/hfs.h>
+
+#include <alloca.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -26,7 +30,7 @@ void *hfuse_init(struct fuse_conn_info *conn, struct fuse_config *cfg) {
     cfg->kernel_cache = 0;
     hfuse_context_t* const context = hfuse_get_context();
     hfuse_fill_context(context);
-    printf("context : %p\n", context);
+    // printf("context : %p\n", context);
     printf("RETURN hfuse_init\n");
     return (void*) context;
 }
@@ -46,35 +50,80 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
     memset(stbuf, 0, sizeof(struct stat));
 
     const char* const mac_path = to_mac_path(path);
+    // printf("mac_path : %s\n", mac_path);
 
-    hfuse_context_t* const context = hfuse_get_context();
-    hfsdirent* const dir_entity = malloc(sizeof(hfsdirent));
-    int hfs_stat_res = hfs_stat(hfuse_get_volume(context), mac_path, dir_entity);
+    hfsvol* const volume = hfuse_get_context_volume();
+
+    hfsdirent* const directory_entity = malloc(sizeof(hfsdirent));
+    int hfs_stat_res = hfs_stat(volume, mac_path, directory_entity);
+    
+    //hfsfile* const file = malloc(sizeof(hfsfile));
+
+
+
     if(hfs_stat_res != 0) {
         //printf("error for hfs_stat\n");
-        printf("RETURN hfuse_getattr\n");
+        // printf("ERROR hfuse_getattr(%s)\n", path);
         return -ENOENT;
     }
-    
 
+    char* const flag_str = calloc(33, sizeof(char));
+    printf("flags : %s\n", format_bits(flag_str, (void*) &directory_entity->flags, sizeof(int)));
+    memset(flag_str, 0, 32);
+    printf("fdflags : %s\n", format_bits(flag_str, (void*) &directory_entity->fdflags, sizeof(short)));
+    free((void*) flag_str);
+    //printf("\"%s\" is %s\n", mac_path, (directory_entity->flags & HFS_ISDIR ? "a directory" : "NOT a directory"));
+    
+    
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
-    stbuf->st_mode = S_IFDIR |0440;
     stbuf->st_nlink = 2;
+    
+    if(is_directory(directory_entity)) {
+        stbuf->st_mode |= S_IFDIR;
+    } else if(is_symlink(directory_entity)){
+        stbuf->st_mode |= S_IFLNK;
+    } else {
+        stbuf->st_mode |= S_IFREG;
+    }
+
+    stbuf->st_mode |= 0440;
     // TODO complete stat struct
 
-    free((void*)mac_path);
+    free((void*) directory_entity);
+    free((void*) mac_path);
     printf("RETURN hfuse_getattr\n");
     return 0;
 }
 
 int hfuse_readdir(const char* path, void* buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* fi, enum fuse_readdir_flags flags) {
-    printf("CALL hfuse_readdir(%s)\n", path);
-    if (strcmp(path, "/") != 0)
-                return -ENOENT;
+    printf("CALL hfuse_readdir(path = %s, offset = %d)\n", path, offset);
  
-    filler(buf, ".", NULL, 0, 0);
-    filler(buf, "..", NULL, 0, 0);
+    hfsvol* const volume = hfuse_get_context_volume();
+    hfsdir* const directory = hfuse_get_file_info_dir(fi);
+
+
+    off_t next_offset = offset + 1;
+    switch(offset) {
+        case 0:
+            filler(buf, ".", NULL, next_offset, 0);
+            break;
+        case 1:
+            filler(buf, "..", NULL, next_offset, 0);
+        default:
+            hfsdirent* const directory_entity = malloc(sizeof(hfsdirent));
+            int hfs_readdir_result = hfs_readdir(directory, directory_entity);
+            if (hfs_readdir_result == -1) {
+                free(directory_entity);
+                return -1;
+            }
+            char* const subpath = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
+            strcpy(subpath, directory_entity->name);
+
+            filler(buf, subpath, NULL, next_offset, 0);
+            free(subpath);
+    }
+
 
     printf("RETURN hfuse_readdir\n");
     return 0;
@@ -87,10 +136,7 @@ int hfuse_opendir(const char* path, struct fuse_file_info* fi) {
     printf("mac_path : \"%s\"\n", mac_path);
 
     hfsvol* const volume = hfuse_get_context_volume();
-    printf("volume : %p\n", volume);
     hfsdir* const directory = hfs_opendir(volume, mac_path);
-    printf("directory %p\n", directory);
-
 
     fi->fh = (uint64_t) directory;
     
@@ -104,7 +150,7 @@ int hfuse_releasedir(const char *path, struct fuse_file_info* fi) {
 
     hfsdir* const directory = hfuse_get_file_info_dir(fi);
     hfs_closedir(directory);
-    printf("destroying %p\n", directory);
+    // printf("destroying %p\n", directory);
 
     printf("RETURN hfuse_releasedir\n");
     return 0;

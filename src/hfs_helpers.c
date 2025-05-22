@@ -3,7 +3,7 @@
 #include "hfuse_context.h"
 #include <stdlib.h>
 #include <string.h>
-
+#include <hfs/apple.h>
 
 hfsvol* const hfuse_get_context_volume() {
     hfuse_context_t* const context = hfuse_get_context();
@@ -24,4 +24,13 @@ char* const to_mac_path(const char* const path) {
     }
     
     return mac_path;
+}
+
+
+bool is_directory(const hfsdirent* const directory_entity) {
+    return directory_entity->flags & HFS_ISDIR;
+}
+
+bool is_symlink(const hfsdirent* const directory_entity) {
+    
 }

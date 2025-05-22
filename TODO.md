@@ -1,7 +1,7 @@
 - Add documentation
 - Implement
-    - hfuse_getattr
-    - hfuse_readdir
+    - hfuse_getattr     OK
+    - hfuse_readdir     OK
     - hfuse_open
     - hfuse_read
 - Unit tests ?
