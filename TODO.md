@@ -2,7 +2,8 @@
 - Implement
     - hfuse_getattr     OK
     - hfuse_readdir     OK
-    - hfuse_open
-    - hfuse_read
+    - hfuse_open        OK
+    - hfuse_read        OK
+- valgrind
 - Unit tests ?
 - parse options
