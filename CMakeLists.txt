@@ -23,7 +23,6 @@ include_directories(${INCLUDE_DIR})
 
 add_executable(hfuse
   src/hfs_helpers.c
-  src/file_handler.c
   src/hfuse_context.c
   src/hfuse.c
   src/main.c
