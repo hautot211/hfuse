@@ -23,6 +23,7 @@ include_directories(${INCLUDE_DIR})
 
 add_executable(hfuse
   src/hfs_helpers.c
+  src/file_handler.c
   src/hfuse_context.c
   src/hfuse.c
   src/main.c
@@ -40,3 +41,5 @@ add_executable(hello
 target_include_directories(hello PRIVATE include)
 target_link_directories(hello PRIVATE lib)
 target_link_libraries(hello PRIVATE hfs fuse3)
+
+install(TARGETS hfuse)
