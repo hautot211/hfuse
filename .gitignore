@@ -1,7 +1,13 @@
 bin
 build
+dist
 
 CMakeCache.txt
 cmake_install.cmake
 CMakeFiles
 Makefile
+
+
+Testing
+DartConfiguration.tcl
+CTestTestfile.cmake

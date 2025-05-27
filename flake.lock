@@ -40,11 +40,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1747750568,
-        "narHash": "sha256-MmehauIxpFGrPBGQ+C5d/BQHTE5I+w1PvJc0IZfMI5Q=",
+        "lastModified": 1747834876,
+        "narHash": "sha256-H7COnBF/K4YMt2rOPXZoaiMwAflCianVbznrc/AgKPU=",
         "ref": "nix",
-        "rev": "abf57064967c475280093985b05e8dc26fb04a43",
-        "revCount": 25,
+        "rev": "0533e4316d60b6ad11323f482c91db8307f7f0dd",
+        "revCount": 26,
         "type": "git",
         "url": "file:///home/guillaume/Documents/fuse-test/hfsutils"
       },
@@ -68,10 +68,12 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 0,
-        "narHash": "sha256-7Fu7oazPoYCbDzb9k8D/DdbKrC3aU1zlnc39Y8jy/s8=",
-        "path": "/nix/store/m4wcdchjxw2fdyzjp8i6irpc613pchkr-source",
-        "type": "path"
+        "lastModified": 1747958103,
+        "narHash": "sha256-qmmFCrfBwSHoWw7cVK4Aj+fns+c54EBP8cGqp/yK410=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "fe51d34885f7b5e3e7b59572796e1bcb427eccb1",
+        "type": "github"
       },
       "original": {
         "id": "nixpkgs",

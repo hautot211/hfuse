@@ -20,4 +20,6 @@ int hfuse_open(const char* path, struct fuse_file_info* fi);
 int hfuse_flush(const char* path, struct fuse_file_info* fi);
 int hfuse_read(const char *path, char *buffer, size_t length, off_t offset, struct fuse_file_info* fi);
 
+int hfuse_access(const char* path, int mask);
+
 #endif

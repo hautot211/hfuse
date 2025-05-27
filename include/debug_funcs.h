@@ -1,7 +1,8 @@
-#include <stdio.h>
-
 #ifndef DEBUG_FUNCS_H
 #define DEBUG_FUNCS_H
+
+#include <stdio.h>
+#include <string.h>
 
 
 char* const format_bits(char* const dst, void* flags, size_t bytesize) {
@@ -26,6 +27,15 @@ void dbg() {
 
 void reset_dbg() {
     beacon = 0;
+}
+
+void dbg_string(const char* const name, const char* const value) {
+    if(value == NULL) {
+        printf("%s : \"%p\"\n", name, value);
+    }
+    else {
+        printf("%s : \"%s\" (%d)\n", name, value, strlen(value));
+    }
 }
 
 #endif
