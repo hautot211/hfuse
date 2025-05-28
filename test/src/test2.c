@@ -27,7 +27,8 @@ int main() {
     test_trim_virtual_dir("/.rsrc/file", "/file", ".rsrc");
     test_trim_virtual_dir("/.notvirtual/file", "/.notvirtual/file", "");
     test_trim_virtual_dir("/test", "/test", "");
-    test_trim_virtual_dir("/Web Pages/.rsrc/About Personal WebSharing.htm", "/Web Pages/About Personal Websharing.htm", ".rsrc");
+    test_trim_virtual_dir("/Web Pages/.rsrc/About Personal WebSharing.htm", "/Web Pages/About Personal WebSharing.htm", ".rsrc");
+    test_trim_virtual_dir("/Apple Extras/.rsrc/Register with Apple", "/Apple Extras/Register with Apple", ".rsrc");
 
 
     return 0;

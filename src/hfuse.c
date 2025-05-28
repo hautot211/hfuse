@@ -63,7 +63,9 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
     char* const vdir = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
     concrete_path = trim_virtual_dir(path, vdir);
     dir_type_t dir_type = get_dir_type(vdir);
+    printf("ERR MALLOC 0\n");
     const char* const mac_path = to_mac_path(concrete_path);
+    printf("ERR MALLOC 1\n");
     hfsvol* const volume = hfuse_get_context_volume();
     
     hfsdirent* const directory_entity = malloc(sizeof(hfsdirent));

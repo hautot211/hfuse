@@ -43,7 +43,7 @@ char* const get_parent_directory(const char* const path, char* const buffer);
  * vdir is set to empty string if path does not point to a virtual file or directory.
  */
 char* const trim_virtual_dir(const char* const path, char* vdir);
-dir_type_t get_dir_type(const char* const path);
+dir_type_t get_dir_type(const char* const entity_name);
 
 // Stat helpers
 bool is_directory(const hfsdirent* const directory_entity);

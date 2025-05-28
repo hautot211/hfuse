@@ -36,8 +36,14 @@ void hfuse_set_file_info_file(struct fuse_file_info* const fi, const hfsfile* co
 }
 
 char* const to_mac_path(const char* const path) {
-    char* const mac_path = calloc(sizeof(char), (strlen(path) + 1));
-    strcpy(mac_path, path);
+    printf("ENTERING to_mac_path\n");
+    printf("path : %s (%d)\n", path, strlen(path));
+    size_t to_allocate = (strlen(path) + 16);
+    printf("to_allocate = %d\n", (to_allocate));
+    char* const mac_path = calloc(sizeof(char), to_allocate);
+    printf("allocation OK\n");
+    strncpy(mac_path, path, strlen(path) + 1);
+    printf("mac_path: %s (%d)\n", mac_path, strlen(mac_path));
 
     for(size_t i = 0; i < strlen(mac_path); i++) {
         if (mac_path[i] == '/')
@@ -146,7 +152,7 @@ char* const trim_virtual_dir(const char* const path, char* vdir) {
     size_t path_len = strlen(path);
     if(get_dir_type(parent_entity + 1) != fkData) {
         strcpy(vdir, parent_entity + 1);
-        size_t parent_entity_len = strlen(current_entity);
+        size_t parent_entity_len = strlen(parent_entity);
         size_t concrete_path_len = path_len - parent_entity_len;
         char* concrete_path = calloc(concrete_path_len + 1, sizeof(char)); // returned
         concrete_path = get_parent_directory(parent_path, concrete_path);
