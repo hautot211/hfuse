@@ -63,9 +63,7 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
     char* const vdir = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
     concrete_path = trim_virtual_dir(path, vdir);
     dir_type_t dir_type = get_dir_type(vdir);
-    printf("ERR MALLOC 0\n");
     const char* const mac_path = to_mac_path(concrete_path);
-    printf("ERR MALLOC 1\n");
     hfsvol* const volume = hfuse_get_context_volume();
     
     hfsdirent* const directory_entity = malloc(sizeof(hfsdirent));
@@ -114,74 +112,80 @@ int hfuse_readdir(const char* path, void* buf, fuse_fill_dir_t filler, off_t off
     printf("CALL hfuse_readdir(path = %s, offset = %d)\n", path, offset);
  
     directory_handler_t* const directory_handler = (directory_handler_t* const) fi->fh;
-    dir_type_t dir_type = hfuse_directory_handler_get_type(directory_handler);
-
+    
     off_t next_offset = offset + 1;
     switch(offset) {
         case 0:
-            filler(buf, ".", NULL, next_offset, 0);
-            printf("filling '.'\n");
-            return 0;
+        filler(buf, ".", NULL, next_offset, 0);
+        printf("filling '.'\n");
+        return 0;
         case 1:
-            filler(buf, "..", NULL, next_offset, 0);
-            printf("filling '..'\n");
-            return 0;
+        filler(buf, "..", NULL, next_offset, 0);
+        printf("filling '..'\n");
+        return 0;
         case 2:
-            if(hfuse_directory_handler_get_type(directory_handler) == fkRsrc) break;
-            filler(buf, ".rsrc", NULL, next_offset, 0);
-            printf("filling '.rsrc'\n");
-            return 0;
+        if(hfuse_directory_handler_get_type(directory_handler) == fkRsrc) break;
+        filler(buf, ".rsrc", NULL, next_offset, 0);
+        printf("filling '.rsrc'\n");
+        return 0;
         
         //default:
         //    return 0;
     }
-
+    
     hfsdir* const directory = hfuse_directory_handler_get(directory_handler);
+    dir_type_t dir_type = hfuse_directory_handler_get_type(directory_handler);
     hfsdirent* const directory_entity = malloc(sizeof(hfsdirent));
     int hfs_readdir_result = 0;
     //printf("directory_entity (%d)\n", sizeof(hfsdirent));
-
+    
     switch(dir_type) {
         case fkData:
+            // printf("SEGFAULT A0\n");
+            // printf("directory : %p\n", directory);
+            // printf("directory_entity : %p\n", directory_entity);
             hfs_readdir_result = hfs_readdir(directory, directory_entity);
+            // printf("SEGFAULT A1\n");
             if (hfs_readdir_result == -1) {
                 free(directory_entity);
                 if (errno == ENOENT) {
-                    printf("No more entities\n");
+                    // printf("No more entities\n");
                 }
                 else {
-                    printf("Unknown error...\n");
+                    // printf("Unknown error...\n");
                 }
                 return -1;
             }
             break;
-        
-        case fkRsrc:
+            
+            case fkRsrc:
             bool isdir = true;
             do {
+                // printf("SEGFAULT B0\n");
                 hfs_readdir_result = hfs_readdir(directory, directory_entity);
                 isdir = is_directory(directory_entity);
+                // printf("SEGFAULT B1\n");
                 if (hfs_readdir_result == -1) {
                     free(directory_entity);
                     if (errno == ENOENT) {
-                        printf("No more entities\n");
+                        // printf("No more entities\n");
                     }
                     else {
-                        printf("Unknown error...\n");
+                        // printf("Unknown error...\n");
                     }
                     return -1;
                 }
             } while(isdir);
             break;
-
-    }
-
+            
+        }
+        
     char* const subentity = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
     strcpy(subentity, directory_entity->name);
-    printf("subentity : '%s' (size %d) (mallocd %d)\n", subentity, strlen(subentity), (sizeof(char) * (HFS_MAX_FLEN + 1)));
+    //printf("subentity : '%s' (size %d) (mallocd %d)\n", subentity, strlen(subentity), (sizeof(char) * (HFS_MAX_FLEN + 1)));
     
     filler(buf, subentity, NULL, next_offset, 0);
-    printf("filler(%p, %s, %p, %d, %d)\n", buf, subentity, NULL, next_offset, 0);
+    //printf("filler(%p, %s, %p, %d, %d)\n", buf, subentity, NULL, next_offset, 0);
     //free(subentity);
     free(directory_entity);
 
@@ -203,7 +207,7 @@ int hfuse_opendir(const char* path, struct fuse_file_info* fi) {
 
     hfsvol* const volume = hfuse_get_context_volume();
     hfsdir* const directory = hfs_opendir(volume, mac_path);
-    
+
     directory_handler_t* directory_handler = hfuse_directory_handler_init(directory, type);
     fi->fh = (uint64_t) directory_handler;
     
