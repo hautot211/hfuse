@@ -28,10 +28,21 @@ char* const to_mac_path(const char* const path);
 /* "/path/to/smthng/.rsrc" endswith ".rsrc" */
 bool endswith(const char* const str, const char* const suf);
 /* /path/to/.rsrc/smthng => /path/to/smthng */
-char* const trim_virtual_dir(const char* const path, const char* const vdir_name);
+//char* const trim_virtual_dir(const char* const path, const char* const vdir_name);
 /* /path/to/not.a.rsrc/.rsrc/smthng with inf = ".rsrc/" => .rsrc/smthng */
 const char* const last_occurence(const char* const str, const char* const inf);
 
+/* Takes a path and write the parent directory of it to the buffer.
+ * If buffer is NULL, a new buffer of size HFS_MAX_FLEN + 1 is allocated on heap.
+ * Returns the adresse of the buffer, or NULL if path has no parent directories.
+ */
+char* const get_parent_directory(const char* const path, char* const buffer);
+
+/* Take a path, and return the effective path of the object inside HFS.
+ * The name of the virtual directory is written in vdir (vdir requires to be at least HFS_MAX_FLEN + 1 in size)
+ * vdir is set to empty string if path does not point to a virtual file or directory.
+ */
+char* const trim_virtual_dir(const char* const path, char* vdir);
 dir_type_t get_dir_type(const char* const path);
 
 // Stat helpers

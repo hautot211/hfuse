@@ -36,7 +36,7 @@ void hfuse_set_file_info_file(struct fuse_file_info* const fi, const hfsfile* co
 }
 
 char* const to_mac_path(const char* const path) {
-    char* const mac_path = malloc(sizeof(char) * (strlen(path) + 1));
+    char* const mac_path = calloc(sizeof(char), (strlen(path) + 1));
     strcpy(mac_path, path);
 
     for(size_t i = 0; i < strlen(mac_path); i++) {
@@ -58,14 +58,15 @@ bool endswith(const char* const str, const char* const suf) {
     return true;
 }
 
+/*
 char* const trim_virtual_dir(const char* const path, const char* const vdir) {
     size_t vdir_len = strlen(vdir);
     size_t path_len = strlen(path);
 
 
-    // .rsrc => .rsrc/
+    // .rsrc => /.rsrc
     size_t actual_vdir_len = (vdir_len + 1);
-    char* actual_vdir = calloc(1, sizeof(char) * (actual_vdir_len + 1)); // free
+    char* actual_vdir = calloc(1, sizeof(char) * (actual_vdir_len + 1)); // freed
     actual_vdir[0] = '/';
     strcpy(actual_vdir + 1, vdir);
 
@@ -89,8 +90,9 @@ char* const trim_virtual_dir(const char* const path, const char* const vdir) {
     memcpy(newpath, path, path_len - vdir_occ_len);
     strcat(newpath, vfile_occ);
     newpath[0] = '/';
+    free(actual_vdir);
     return newpath;
-}
+}*/
 
 const char* const last_occurence(const char* const str, const char* const inf) {
     const char* last = NULL;
@@ -106,9 +108,66 @@ const char* const last_occurence(const char* const str, const char* const inf) {
     }
 }
 
+char* const get_parent_directory(const char* const path, char* buffer) {
+    if(strcmp(path, "/") == 0) return NULL;
+    size_t path_len = strlen(path);
+
+    const char* const filename = last_occurence(path, "/");
+    size_t filename_len = strlen(filename);
+    
+    size_t buffer_len = MAX(path_len - filename_len, 1);
+    if(buffer == NULL) buffer = calloc(sizeof(char), buffer_len + 1);
+    memcpy(buffer, path, buffer_len);
+    buffer[0] = '/';
+
+    return buffer;
+}
+
+char* const trim_virtual_dir(const char* const path, char* vdir) {
+    /* Case path is root */
+    if(strcmp(path, "/") == 0) {
+        strcpy(vdir, "");
+        char* const concrete_path = malloc(2 * sizeof(char)); // returned
+        strcpy(concrete_path, "/");
+        return concrete_path;
+    }
+
+    /* Case path is a virtual directory */
+    const char* const current_entity = last_occurence(path, "/");
+    if(get_dir_type(current_entity + 1) != fkData) {
+        strcpy(vdir, current_entity + 1);
+        char* const concrete_path = get_parent_directory(path, NULL); // returned
+        return concrete_path;
+    }
+
+    /* Case path is a virtual file */
+    const char* const parent_path = get_parent_directory(path, NULL); // freed
+    const char* const parent_entity = last_occurence(parent_path, "/");
+    size_t path_len = strlen(path);
+    if(get_dir_type(parent_entity + 1) != fkData) {
+        strcpy(vdir, parent_entity + 1);
+        size_t parent_entity_len = strlen(current_entity);
+        size_t concrete_path_len = path_len - parent_entity_len;
+        char* concrete_path = calloc(concrete_path_len + 1, sizeof(char)); // returned
+        concrete_path = get_parent_directory(parent_path, concrete_path);
+        if(strcmp(concrete_path, "/") == 0) strcpy(concrete_path, "");
+        concrete_path = strcat(concrete_path, current_entity);
+        free((void*) parent_path);
+        return concrete_path;
+    }
+
+    /* Case path is a concrete file or directory*/
+    size_t concrete_path_len = path_len;
+    char* const concrete_path = malloc((concrete_path_len + 1) * sizeof(char)); // returned
+    strncpy(concrete_path, path, path_len);
+    strncpy(vdir, "", 1);
+
+    return concrete_path;
+}
+
 dir_type_t get_dir_type(const char* const path) {
-    if(last_occurence(path, "/.rsrc") != NULL) return fkRsrc;
-    if(last_occurence(path, "/.fdat") != NULL) return 0xf0;
+    if(strcmp(path, ".rsrc") == 0) return fkRsrc;
+    if(strcmp(path, ".fdat") == 0) return 0xf0;
     return fkData;
 }
 

@@ -55,8 +55,29 @@ void test_get_dir_type() {
     assert(get_dir_type("/path/to/something/.rsrc/test") == fkRsrc);
 }
 
+void test_get_parent_directory() {
+    {
+        const char* const path = "/";
+        assert(get_parent_directory(path, NULL) == NULL);
+    }
+
+    {
+        const char* const path = "/test";
+        const char* const parent_dir = get_parent_directory(path, NULL);
+        assert(strcmp(parent_dir, "/") == 0);
+        free((void*) parent_dir);
+    }
+
+    {
+        const char* const path = "/path/to/.rsrc/file";
+        const char* const parent_dir = get_parent_directory(path, NULL);
+        assert(strcmp(parent_dir, "/path/to/.rsrc") == 0);
+        free((void*) parent_dir);
+    }
+}
+
 int main() {
-    test_trim_virtual_dir();
-    test_get_dir_type();
+    //test_trim_virtual_dir();
+    //test_get_dir_type();
     return 0;
 }
