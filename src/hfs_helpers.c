@@ -59,42 +59,6 @@ bool endswith(const char* const str, const char* const suf) {
     return true;
 }
 
-/*
-char* const trim_virtual_dir(const char* const path, const char* const vdir) {
-    size_t vdir_len = strlen(vdir);
-    size_t path_len = strlen(path);
-
-
-    // .rsrc => /.rsrc
-    size_t actual_vdir_len = (vdir_len + 1);
-    char* actual_vdir = calloc(1, sizeof(char) * (actual_vdir_len + 1)); // freed
-    actual_vdir[0] = '/';
-    strcpy(actual_vdir + 1, vdir);
-
-    // /path/to/.rsrc/test => /path/to/test
-    // /path/to/.rsrc => /path/to
-    // /path/to/.rsrc/ => /path/to/
-    const char* vdir_occ = last_occurence(path, actual_vdir);
-    if (vdir_occ == NULL) {
-        free(actual_vdir);
-        char* const newpath = calloc(1, path_len + 1); // returned
-        strcpy(newpath, path);
-        return newpath;
-    }
-    size_t vdir_occ_len = strlen(vdir_occ);
-    
-    const char* const vfile_occ = vdir_occ + actual_vdir_len;
-    const size_t vfile_occ_len = strlen(vfile_occ);
-    
-    size_t newpath_len = MAX(vfile_occ_len, 1) + (vdir_occ - path + 1);
-    char* const newpath = calloc(1, newpath_len + 1); // returned
-    memcpy(newpath, path, path_len - vdir_occ_len);
-    strcat(newpath, vfile_occ);
-    newpath[0] = '/';
-    free(actual_vdir);
-    return newpath;
-}*/
-
 const char* const last_occurence(const char* const str, const char* const inf) {
     const char* last = NULL;
     const char* curr = str;
@@ -156,6 +120,7 @@ char* const trim_virtual_dir(const char* const path, char* vdir) {
         free((void*) parent_path);
         return concrete_path;
     }
+    free((void*) parent_path);
 
     /* Case path is a concrete file or directory*/
     size_t concrete_path_len = path_len;

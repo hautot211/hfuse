@@ -17,9 +17,10 @@ int hfuse_releasedir(const char *path, struct fuse_file_info* fi);
 int hfuse_readdir(const char* path, void* buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* fi, enum fuse_readdir_flags flags);
 
 int hfuse_open(const char* path, struct fuse_file_info* fi);
-int hfuse_flush(const char* path, struct fuse_file_info* fi);
+int hfuse_release(const char* path, struct fuse_file_info* fi);
 int hfuse_read(const char *path, char *buffer, size_t length, off_t offset, struct fuse_file_info* fi);
 
-int hfuse_access(const char* path, int mask);
+// int hfuse_access(const char* path, int mask);
+off_t hfuse_lseek(const char *path, off_t off, int whence, struct fuse_file_info *fi);
 
 #endif
