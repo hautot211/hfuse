@@ -4,6 +4,6 @@
     - hfuse_readdir     OK
     - hfuse_open        OK
     - hfuse_read        OK
-- valgrind              OK (22/05/25)
+- valgrind              OK (31/05/25)
 - Unit tests ?
 - parse options
