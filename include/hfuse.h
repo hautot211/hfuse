@@ -1,3 +1,8 @@
+/*
+ * Set of functions that fuse will use to open and read files and directories
+ * <https://libfuse.github.io/doxygen/structfuse__operations.html>
+ */
+
 #define FUSE_USE_VERSION 35
 #include <fuse3/fuse.h>
 
@@ -21,6 +26,6 @@ int hfuse_release(const char* path, struct fuse_file_info* fi);
 int hfuse_read(const char *path, char *buffer, size_t length, off_t offset, struct fuse_file_info* fi);
 
 // int hfuse_access(const char* path, int mask);
-off_t hfuse_lseek(const char *path, off_t off, int whence, struct fuse_file_info *fi);
+// off_t hfuse_lseek(const char *path, off_t off, int whence, struct fuse_file_info *fi);
 
 #endif

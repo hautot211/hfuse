@@ -81,6 +81,7 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
     
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
+    stbuf->st_mode = 0;
     
     if(is_directory(directory_entity)) {
         stbuf->st_mode |= S_IFDIR;
@@ -278,10 +279,4 @@ int hfuse_read(const char *path, char *buffer, size_t length, off_t offset, stru
 
     printf("RETURN hfuse_read\n");
     return total_read;
-}
-
-
-off_t hfuse_lseek(const char *path, off_t off, int whence, struct fuse_file_info *fi) {
-    printf("CALL hfuse_lseek(%s, %d, %d, %p)\n", path, off, whence, fi);
-
 }

@@ -1,8 +1,8 @@
-#ifndef DEBUG_FUNCS_H
-#define DEBUG_FUNCS_H
-
 #include <stdio.h>
 #include <string.h>
+
+#ifndef DEBUG_FUNCS_H
+#define DEBUG_FUNCS_H
 
 
 char* const format_bits(char* const dst, void* flags, size_t bytesize);
