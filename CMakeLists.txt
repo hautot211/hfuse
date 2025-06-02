@@ -29,6 +29,7 @@ add_library(hfuse_lib
   src/file_handler.c
   src/hfuse_context.c
   src/hfuse.c
+  src/debug_funcs.c
 )
 target_include_directories(hfuse_lib PRIVATE include)
 target_link_directories(hfuse_lib PRIVATE lib)

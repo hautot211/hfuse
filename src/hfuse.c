@@ -31,7 +31,7 @@ const struct fuse_operations hfuse_operations = {
 
 
 void *hfuse_init(struct fuse_conn_info *conn, struct fuse_config *cfg) {
-    // printf("CALL hfuse_init\n");
+    printf("CALL hfuse_init\n");
     cfg->kernel_cache = 0;
     hfuse_context_t* const context = hfuse_get_context();
     hfuse_fill_context(context);
