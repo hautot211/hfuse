@@ -26,7 +26,6 @@ const struct fuse_operations hfuse_operations = {
         .open           = hfuse_open,
         .release        = hfuse_release,
         .read           = hfuse_read,
-        //.lseek          = hfuse_lseek,
 };
 
 
@@ -49,17 +48,17 @@ void hfuse_destroy(void* private_data) {
 
 
 int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *fi) {
-    printf("CALL hfuse_getattr(%s)\n", path);
+    //printf("CALL hfuse_getattr(%s)\n", path);
     memset(stbuf, 0, sizeof(struct stat));
-
+    
     /* 5 cases
-     - hfs file
-         - hfs folder
-         - hfs symlink
-         - virtual folder (.rsrc, .fdat, ...)
-         - virtual files (.rsrc/foo, .fdat/bar)
+    - hfs file
+    - hfs folder
+    - hfs symlink
+    - virtual folder (.rsrc, .fdat, ...)
+    - virtual files (.rsrc/foo, .fdat/bar)
     */
-         
+    
     char* concrete_path;
     char* const vdir = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
     concrete_path = trim_virtual_dir(path, vdir);
@@ -70,7 +69,7 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
     hfsdirent* const directory_entity = malloc(sizeof(hfsdirent));
     int hfs_stat_res = hfs_stat(volume, mac_path, directory_entity);
     
-
+    
     if(hfs_stat_res == -1) {
         free((void*) directory_entity);
         free((void*) mac_path);
@@ -89,102 +88,92 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
         stbuf->st_nlink = 2;
         stbuf->st_size = 4096;
          printf("\t%s is a directory\n", path);
-    } else if(is_symlink(directory_entity)){
-        stbuf->st_mode |= S_IFLNK;
-        stbuf->st_mode |= 0440;
-        printf("\t%s is a symlink\n", path);
-    } else {
-        printf("\t%s is a regular file\n", path);
-        stbuf->st_mode |= S_IFREG;
-        stbuf->st_mode |= 0440;
-        stbuf->st_nlink = 1;
+        } else if(is_symlink(directory_entity)){
+            stbuf->st_mode |= S_IFLNK;
+            stbuf->st_mode |= 0440;
+            printf("\t%s is a symlink\n", path);
+        } else {
+            printf("\t%s is a regular file\n", path);
+            stbuf->st_mode |= S_IFREG;
+            stbuf->st_mode |= 0440;
+            stbuf->st_nlink = 1;
+            
+            hfsfile* const file = hfs_open(volume, mac_path);
+            hfs_setfork(file, dir_type);
+            stbuf->st_size = current_fork_size(file);
+        }
 
-        hfsfile* const file = hfs_open(volume, mac_path);
-        hfs_setfork(file, dir_type);
-        stbuf->st_size = current_fork_size(file);
-    }
+        // TODO complete stat struct
 
-    // TODO complete stat struct
-
-    free((void*) directory_entity);
-    free((void*) mac_path);
-    free((void*) concrete_path);
-    free((void*) vdir);
-    // printf("RETURN hfuse_getattr\n");
-    return 0;
+        free((void*) directory_entity);
+        free((void*) mac_path);
+        free((void*) concrete_path);
+        free((void*) vdir);
+        // printf("RETURN hfuse_getattr\n");
+        return 0;
 }
 
 int hfuse_readdir(const char* path, void* buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* fi, enum fuse_readdir_flags flags) {
     printf("CALL hfuse_readdir(path = %s, offset = %d)\n", path, offset);
- 
+
     directory_handler_t* const directory_handler = (directory_handler_t* const) fi->fh;
-    
     off_t next_offset = offset + 1;
     switch(offset) {
         case 0:
-        filler(buf, ".", NULL, next_offset, 0);
-        printf("filling '.'\n");
-        return 0;
+            filler(buf, ".", NULL, next_offset, 0);
+            return 0;
         case 1:
-        filler(buf, "..", NULL, next_offset, 0);
-        printf("filling '..'\n");
-        return 0;
+            filler(buf, "..", NULL, next_offset, 0);
+            return 0;
         case 2:
-        if(hfuse_directory_handler_get_type(directory_handler) == fkRsrc) break;
-        filler(buf, ".rsrc", NULL, next_offset, 0);
-        printf("filling '.rsrc'\n");
-        return 0;
+            if(hfuse_directory_handler_get_type(directory_handler) == fkRsrc) break;
+            filler(buf, ".rsrc", NULL, next_offset, 0);
+            return 0;
         
-        //default:
-        //    return 0;
     }
     
     hfsdir* const directory = hfuse_directory_handler_get(directory_handler);
     dir_type_t dir_type = hfuse_directory_handler_get_type(directory_handler);
     hfsdirent* const directory_entity = malloc(sizeof(hfsdirent));
     int hfs_readdir_result = 0;
-    //printf("directory_entity (%d)\n", sizeof(hfsdirent));
     
     switch(dir_type) {
         case fkData:
             hfs_readdir_result = hfs_readdir(directory, directory_entity);
             if (hfs_readdir_result == -1) {
                 if (errno == ENOENT) {
-                    // printf("No more entities\n");
+                    free((void*) directory_entity);
+                    errno = 0;
+                    return 0;
                 }
                 else {
-                    // printf("Unknown error...\n");
+                    free((void*) directory_entity);
+                    return -1;
                 }
-                free((void*) directory_entity);
-                return -1;
             }
             break;
             
         case fkRsrc:
             bool isdir = true;
             do {
-                // printf("SEGFAULT B0\n");
                 hfs_readdir_result = hfs_readdir(directory, directory_entity);
                 isdir = is_directory(directory_entity);
-                // printf("SEGFAULT B1\n");
                 if (hfs_readdir_result == -1) {
                     free(directory_entity);
                     if (errno == ENOENT) {
-                        // printf("No more entities\n");
+                        errno = 0;
+                        return 0;
                     }
                     else {
-                        // printf("Unknown error...\n");
+                        return -1;
                     }
-                    return -1;
                 }
             } while(isdir);
             break;
             
         }
-        
-    char* const subentity = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
-    strcpy(subentity, directory_entity->name);
-    //printf("subentity : '%s' (size %d) (mallocd %d)\n", subentity, strlen(subentity), (sizeof(char) * (HFS_MAX_FLEN + 1)));
+
+    const char* const subentity = strdup(directory_entity->name);
     
     filler(buf, subentity, NULL, next_offset, 0);
     free((void*) subentity);
@@ -198,16 +187,13 @@ int hfuse_opendir(const char* path, struct fuse_file_info* fi) {
 
     char* vdir = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
     char* const concrete_path = trim_virtual_dir(path, vdir);
-    printf("path : %s (%d)\n", path, strlen(path));
     (concrete_path == NULL) ? printf("%p", concrete_path) : printf("%p  concrete_path : %s (%d)\n", concrete_path, concrete_path, strlen(concrete_path));
     dir_type_t type = get_dir_type(vdir);
-    printf("this directory reads %s forks\n", (type == fkData ? "data" : "resource"));
-
+    
     const char* const mac_path = to_mac_path(concrete_path);
-
+    
     hfsvol* const volume = hfuse_get_context_volume();
     hfsdir* const directory = hfs_opendir(volume, mac_path);
-
     directory_handler_t* directory_handler = hfuse_directory_handler_init(directory, type);
     fi->fh = (uint64_t) directory_handler;
     
@@ -219,7 +205,7 @@ int hfuse_opendir(const char* path, struct fuse_file_info* fi) {
 }
 
 int hfuse_releasedir(const char *path, struct fuse_file_info* fi) {
-    printf("CALL hfuse_releasedir(%s)\n", path);
+    // printf("CALL hfuse_releasedir(%s)\n", path);
 
     directory_handler_t* directory_handler = (directory_handler_t* const) fi->fh;
     hfsdir* const directory = hfuse_directory_handler_get(directory_handler);
@@ -237,8 +223,6 @@ int hfuse_open(const char* path, struct fuse_file_info* fi) {
 
     char* vdir = malloc(sizeof(char) * (HFS_MAX_FLEN + 1)); // free
     char* const concrete_path = trim_virtual_dir(path, vdir);
-    printf("vdir : %s (%d)\n", vdir, strlen(vdir));
-    printf("concrete_path : %s (%d)\n", concrete_path, strlen(concrete_path));
     
 
     const char* const mac_path = to_mac_path(concrete_path);
@@ -247,7 +231,6 @@ int hfuse_open(const char* path, struct fuse_file_info* fi) {
     dir_type_t frk = get_dir_type(vdir);
     hfs_setfork(file, frk);
     hfuse_set_file_info_file(fi, file);
-    printf("file : %p\n", fi->fh);
 
     free((void*) mac_path);
     free((void*) concrete_path);
@@ -271,12 +254,9 @@ int hfuse_read(const char *path, char *buffer, size_t length, off_t offset, stru
     printf("CALL hfuse_read(%s, %s, %d, %d, ???)\n", path, buffer, length, offset);
 
     hfsfile* const file = hfuse_get_file_info_file(fi);
-    printf("fi : %p, file : %p\n", fi, file);
     hfs_seek(file, offset, HFS_SEEK_SET);
-    printf("segfault\n");
-    printf("hfs_read(%p, ???, %d)\n", file, length);
     long total_read = hfs_read(file, buffer, length);
 
-    printf("RETURN hfuse_read\n");
+    // printf("RETURN hfuse_read\n");
     return total_read;
 }
