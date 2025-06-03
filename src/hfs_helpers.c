@@ -143,7 +143,8 @@ bool is_directory(const hfsdirent* const directory_entity) {
 }
 
 bool is_symlink(const hfsdirent* const directory_entity) {
-    return false;
+    /* Read finder info and strcmp with 'hlnk' or something */
+    return strcmp(directory_entity->u.file.creator, "hbwr") == 0;
 }
 
 
