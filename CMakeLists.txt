@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 
 project(hfuse)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
 include(CTest)
 enable_testing()
@@ -43,7 +42,7 @@ target_include_directories(hfuse PRIVATE include)
 target_link_directories(hfuse PRIVATE lib)
 target_link_libraries(hfuse PRIVATE hfs fuse3)
 target_link_libraries(hfuse PRIVATE hfs hfuse_lib)
-install(TARGETS hfuse)
+install(TARGETS hfuse COMPONENT runtime)
 
 
 add_executable(hello

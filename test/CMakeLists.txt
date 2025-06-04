@@ -7,7 +7,6 @@ set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
 # Source directories
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
-message(STATUS "INCLUDE_DIR : ${INCLUDE_DIR}")
 set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 
 # Output directories
@@ -29,7 +28,6 @@ function(create_test test_name)
         COMMAND ${TEST_OUTPUT_NAME}
         WORKING_DIRECTORY ${BIN_DIR}
     )
-    message(STATUS "${BIN_DIR}")
 endfunction()
 
 create_test(hfs_helpers)
