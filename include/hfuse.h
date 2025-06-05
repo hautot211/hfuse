@@ -10,6 +10,8 @@
 #ifndef HFUSE_H
 #define HFUSE_H
 
+/* Fuse operations */
+
 extern const struct fuse_operations hfuse_operations;
 
 void *hfuse_init(struct fuse_conn_info *conn, struct fuse_config *cfg);
@@ -27,7 +29,10 @@ int hfuse_read(const char *path, char *buffer, size_t length, off_t offset, stru
 
 int hfuse_readlink(const char* path, char* buffer, size_t length);
 
-// int hfuse_access(const char* path, int mask);
-// off_t hfuse_lseek(const char *path, off_t off, int whence, struct fuse_file_info *fi);
+
+/* Constants */
+
+extern const char* const VDIR_RSRC;
+extern const char* const VDIR_FINF;
 
 #endif

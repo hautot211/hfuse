@@ -1,6 +1,5 @@
 /* 
- * The two structures defined here (file_handler_t and directory_handler_t) are meant to be used with
- * fuse_file_info.fh .
+ * The structure defined here is meant to be used with fuse_file_info.fh .
  */
 
 #include <hfs/libhfs.h>
@@ -10,31 +9,37 @@
 #ifndef FILE_HANDLER_H
 #define FILE_HANDLER_H
 
-typedef struct file_handler_s file_handler_t;
-typedef struct directory_handler_s directory_handler_t;
+typedef struct hfuse_handler_s hfuse_handler_t;
 
-typedef int dir_type_t;
-enum {
-//  fkData  = 0x00,              /* Defined in 'hfs/file.h' */
-//  fkRsrc  = 0xff,
-    hfsFdat = 0x0f,
-};
+typedef enum : unsigned int {
+    DIRTYPE_DATA,
+    DIRTYPE_RSRC,
+    DIRTYPE_FINF,
+} dirtype_t;
 
-directory_handler_t* const hfuse_directory_handler_init(hfsdir* const directory, dir_type_t type);
+typedef enum : unsigned int {
+    ENTTYPE_FILE,
+    ENTTYPE_DIRECTORY,
+} enttype_t;
 
-hfsdir* const hfuse_directory_handler_get(const directory_handler_t* const dh);
-void hfuse_directory_handler_set(directory_handler_t* const dh, hfsdir* const directory);
+/* Construstors / Destructors */
 
-dir_type_t hfuse_directory_handler_get_type(const directory_handler_t* const dh);
-void hfuse_directory_handler_set_type(directory_handler_t* const dh, const dir_type_t);
+hfuse_handler_t* const hfuse_handler_init(const char* const path, enttype_t enttype);
+void hfuse_handler_destroy(hfuse_handler_t* const h);
 
+/* Getters / Setters */
 
+hfsdir* const hfuse_handler_get_directory(const hfuse_handler_t* const h);
+void hfuse_handler_set_directory(hfuse_handler_t* const h, hfsdir* const directory);
 
-file_handler_t* const hfuse_file_handler_init(hfsfile* const file);
+hfsfile* const hfuse_handler_get_file(const hfuse_handler_t* const h);
+void hfuse_handler_set_file(hfuse_handler_t* const h, hfsfile* const file);
 
-hfsfile* const hfuse_file_handler_get(file_handler_t* const fh);
-void hfuse_file_handler_set(file_handler_t* const fh, hfsfile* const file);
+dirtype_t hfuse_handler_get_dirtype(const hfuse_handler_t* const h);
+void hfuse_handler_set_dirtype(hfuse_handler_t* const h, const dirtype_t type);
 
+const char* const hfuse_handler_get_macpath(hfuse_handler_t* const h);
+void hfuse_handler_set_macpath(hfuse_handler_t* const h, const char* const path);
 
 
 #endif

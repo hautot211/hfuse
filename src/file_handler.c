@@ -1,56 +1,108 @@
 #include "file_handler.h"
 
+#include "hfs_helpers.h"
 #include <stdio.h>
 #include <hfs/libhfs.h>
 #include <hfs/hfs.h>
+#include <string.h>
 #include <hfs/file.h> // fkData, fkRsrc
 #include <stdlib.h>
 
 /* Structures */
 
-struct directory_handler_s {
-    hfsdir* directory;
-    dir_type_t type;
+struct hfuse_handler_s {
+    void* structure;        /* Pointer to 'hfsdir' or 'hfsfile' struct */
+    char* macpath;          /* Mac path (separated with ':') */
+    dirtype_t dirtype;      /* Type of the current directory (resource fork directory, normal data fork directory, ...) */
+    enttype_t enttype;      /* Whether the structure is an 'hfsfile' or 'hfsdir' */
 };
 
-struct file_handler_s {
-    hfsfile* file;
-};
+// (path, enttype) => (dirtype, either[hfsdir*, hfsfile*], macpath)
 
+enttype_t _hfuse_handler_get_enttype(const hfuse_handler_t* const h) { return h->enttype; }
+void _hfuse_handler_set_enttype(hfuse_handler_t* const h, enttype_t enttype) { h->enttype = enttype; }
 
-directory_handler_t* const hfuse_directory_handler_init(hfsdir* const directory, dir_type_t type) {
-    directory_handler_t* const dh = malloc(sizeof(directory_handler_t));
-    hfuse_directory_handler_set(dh, directory);
-    hfuse_directory_handler_set_type(dh, type);
-    return dh;
+void* _hfuse_handler_get_structure(const hfuse_handler_t* const self) { return self->structure; }
+void _hfuse_handler_set_structure(hfuse_handler_t* const self, void* structure) { self->structure = structure; }
+
+void _hfuse_handler_open(hfuse_handler_t* const self) {
+    hfsvol* const volume = hfuse_get_context_volume();
+    const char* const macpath = hfuse_handler_get_macpath(self);
+    enttype_t enttype = _hfuse_handler_get_enttype(self);
+    dirtype_t dirtype = hfuse_handler_get_dirtype(self);
+    switch(enttype) {
+        case ENTTYPE_DIRECTORY:
+        hfsdir* directory = hfs_opendir(volume, macpath);
+        hfuse_handler_set_directory(self, directory);
+        break;
+
+        case ENTTYPE_FILE:
+        hfsfile* file = hfs_open(volume, macpath);
+        hfuse_handler_set_file(self, file);
+        break;
+    }
 }
 
-hfsdir* const hfuse_directory_handler_get(const directory_handler_t* const dh) {
-    return dh->directory;
-}
-void hfuse_directory_handler_set(directory_handler_t* const dh, hfsdir* const directory) {
-    dh->directory = directory;
+void _hfuse_handler_close(hfuse_handler_t* const self) {
+    switch(_hfuse_handler_get_enttype(self)) {
+        case ENTTYPE_DIRECTORY:
+            hfsdir* const directory = hfuse_handler_get_directory(self);
+            hfs_closedir(directory);
+            break;
+
+        case ENTTYPE_FILE:
+            hfsfile* const file = hfuse_handler_get_file(self);
+            hfs_close(file);
+            break;
+    }
+    _hfuse_handler_set_structure(self, NULL);
 }
 
-dir_type_t hfuse_directory_handler_get_type(const directory_handler_t* const dh) {
-    return dh->type;
-}
-void hfuse_directory_handler_set_type(directory_handler_t* const dh, const dir_type_t type) {
-    dh->type = type;
-}
+hfuse_handler_t* const hfuse_handler_init(const char* const path, enttype_t enttype) {
+    hfuse_handler_t* self = (hfuse_handler_t*) malloc(sizeof(hfuse_handler_t));
+    char* vdir = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
+    char* concrete_path = trim_virtual_dir(path, vdir);
+    char* macpath = to_mac_path(concrete_path);
+    
+    dirtype_t dirtype = get_dirtype(vdir);
+    
+    hfsvol* const volume = hfuse_get_context_volume();
 
+    hfuse_handler_set_macpath(self, macpath);
+    hfuse_handler_set_dirtype(self, dirtype);
+    _hfuse_handler_set_enttype(self, enttype);
+    _hfuse_handler_open(self);
 
-
-file_handler_t* const hfuse_file_handler_init(hfsfile* const file) {
-    file_handler_t* const fh = malloc(sizeof(file_handler_t));
-    hfuse_file_handler_set(fh, file);
-    return fh;
-}
-
-hfsfile* const hfuse_file_handler_get(file_handler_t* const fh) {
-    return fh->file;
-}
-void hfuse_file_handler_set(file_handler_t* const fh, hfsfile* const file) {
-    fh->file = file;
+    free(concrete_path);
+    free(vdir);
+    return self;
 }
 
+// (dirtype, hfsdir*, macpath) => (dirtype, hfsfile*, macpath)
+
+void hfuse_handler_destroy(hfuse_handler_t* const self) {
+    _hfuse_handler_close(self);
+    const char* const macpath = hfuse_handler_get_macpath(self);
+    free((void*) macpath);
+    free((void*) self);
+}
+
+hfsdir* const hfuse_handler_get_directory(const hfuse_handler_t* const self) {
+    return (hfsdir*) _hfuse_handler_get_structure(self);
+}
+void hfuse_handler_set_directory(hfuse_handler_t* const self, hfsdir* const directory) {
+    _hfuse_handler_set_structure(self, (void*) directory);
+}
+
+hfsfile* const hfuse_handler_get_file(const hfuse_handler_t* const self) {
+    return (hfsfile*) _hfuse_handler_get_structure(self);
+}
+void hfuse_handler_set_file(hfuse_handler_t* const self, hfsfile* const file) {
+    _hfuse_handler_set_structure(self, (void*) file);
+}
+
+dirtype_t hfuse_handler_get_dirtype(const hfuse_handler_t* const h) { return h->dirtype; }
+void hfuse_handler_set_dirtype(hfuse_handler_t* const h, const dirtype_t type) { h->dirtype = type; }
+
+const char* const hfuse_handler_get_macpath(hfuse_handler_t* const h) { return h->macpath; }
+void hfuse_handler_set_macpath(hfuse_handler_t* const h, const char* const path) { h->macpath = (char*) path; }

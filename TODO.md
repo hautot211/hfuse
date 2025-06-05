@@ -1,7 +1,8 @@
 - Add documentation
 - Implement
+    - Failure when mounting non standard HFS filesystem
 - valgrind              OK (31/05/25)
 - Unit tests ?
 - Debug
-    - "Input/output error" when "find . -type l" 
+    - "Input/output error" when "find . -type l"
 - parse options

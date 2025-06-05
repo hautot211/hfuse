@@ -1,6 +1,7 @@
 #include "hfs_helpers.h"
 
 #include "hfuse_context.h"
+#include "hfuse.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -99,7 +100,7 @@ char* const trim_virtual_dir(const char* const path, char* vdir) {
 
     /* Case path is a virtual directory */
     const char* const current_entity = last_occurence(path, "/");
-    if(get_dir_type(current_entity + 1) != fkData) {
+    if(get_dirtype(current_entity + 1) != DIRTYPE_DATA) {
         strcpy(vdir, current_entity + 1);
         char* const concrete_path = get_parent_directory(path, NULL); // returned
         return concrete_path;
@@ -109,7 +110,7 @@ char* const trim_virtual_dir(const char* const path, char* vdir) {
     const char* const parent_path = get_parent_directory(path, NULL); // freed
     const char* const parent_entity = last_occurence(parent_path, "/");
     size_t path_len = strlen(path);
-    if(get_dir_type(parent_entity + 1) != fkData) {
+    if(get_dirtype(parent_entity + 1) != DIRTYPE_DATA) {
         strcpy(vdir, parent_entity + 1);
         size_t parent_entity_len = strlen(parent_entity);
         size_t concrete_path_len = path_len - parent_entity_len;
@@ -131,10 +132,10 @@ char* const trim_virtual_dir(const char* const path, char* vdir) {
     return concrete_path;
 }
 
-dir_type_t get_dir_type(const char* const path) {
-    if(strcmp(path, ".rsrc") == 0) return fkRsrc;
-    if(strcmp(path, ".fdat") == 0) return 0xf0;
-    return fkData;
+dirtype_t get_dirtype(const char* const path) {
+    if(strcmp(path, VDIR_RSRC) == 0) return DIRTYPE_RSRC;
+    if(strcmp(path, VDIR_FINF) == 0) return DIRTYPE_FINF;
+    return DIRTYPE_DATA;
 }
 
 

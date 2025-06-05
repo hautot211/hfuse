@@ -47,12 +47,12 @@ void test_trim_virtual_dir() {
     }
 }
 
-void test_get_dir_type() {
-    assert(get_dir_type("/path/to/something") == fkData);
-    assert(get_dir_type("/") == fkData);
+void test_get_dirtype() {
+    assert(get_dirtype("/path/to/something") == fkData);
+    assert(get_dirtype("/") == fkData);
 
-    assert(get_dir_type("/path/to/something/.rsrc") == fkRsrc);
-    assert(get_dir_type("/path/to/something/.rsrc/test") == fkRsrc);
+    assert(get_dirtype("/path/to/something/.rsrc") == fkRsrc);
+    assert(get_dirtype("/path/to/something/.rsrc/test") == fkRsrc);
 }
 
 void test_get_parent_directory() {
@@ -78,6 +78,6 @@ void test_get_parent_directory() {
 
 int main() {
     //test_trim_virtual_dir();
-    //test_get_dir_type();
+    //test_get_dirtype();
     return 0;
 }

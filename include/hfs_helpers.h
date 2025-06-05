@@ -72,7 +72,8 @@ char* const trim_virtual_dir(const char* const path, char* vdir);
 /*
  * Return the dir type of an entity
  */
-dir_type_t get_dir_type(const char* const entity_name);
+dirtype_t get_dirtype(const char* const entity_name);
+
 
 // Stat helpers
 

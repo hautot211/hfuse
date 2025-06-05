@@ -31,6 +31,7 @@
         inherit buildInputs nativeBuildInputs;
         packages = [
           pkgs.valgrind
+          pkgs.gdb
         ];
       };
     }

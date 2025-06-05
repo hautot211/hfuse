@@ -52,5 +52,4 @@ target_include_directories(hello PRIVATE include)
 target_link_directories(hello PRIVATE lib)
 target_link_libraries(hello PRIVATE hfs fuse3)
 
-
-add_subdirectory(test VARIABLES)
+add_subdirectory(${TEST_DIR})
