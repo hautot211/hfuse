@@ -1,8 +1,13 @@
 - Add documentation
 - Implement
     - Failure when mounting non standard HFS filesystem
+- Rewrite
+    - file handlers again (OO style, virtual classes)
 - valgrind              OK (31/05/25)
 - Unit tests ?
 - Debug
-    - "Input/output error" when "find . -type l"
+    - 'find mnt -type f |xargs -n1 -d'\n' cat' killing program 
+        - DUE TO MULTI-THREADING, no problem in single-thread mode
+        - Works well in single-threaded
+    
 - parse options

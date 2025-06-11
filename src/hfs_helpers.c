@@ -2,6 +2,7 @@
 
 #include "hfuse_context.h"
 #include "hfuse.h"
+#include "debug_funcs.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -36,17 +37,20 @@ void hfuse_set_file_info_file(struct fuse_file_info* const fi, const hfsfile* co
     fi->fh = (uint64_t) file;
 }
 
-char* const to_mac_path(const char* const path) {
-    size_t to_allocate = (strlen(path) + 1);
-    char* const mac_path = calloc(sizeof(char), to_allocate);
-    strncpy(mac_path, path, strlen(path) + 1);
+char* const strtr(char* dst, const char* const string, char old, char new) {
+  if(dst == NULL) {
+    dst = strdup(string);
+  } else if(string == dst) {
+    dst = strcpy(dst, string);
+  }
 
-    for(size_t i = 0; i < strlen(mac_path); i++) {
-        if (mac_path[i] == '/')
-            mac_path[i] = ':';
-    }
-    
-    return mac_path;
+  const char* string_iter = NULL;
+  char* dst_iter = NULL;
+  for(string_iter = string, dst_iter = dst; *string_iter != '\0'; string_iter++, dst_iter++) {
+    if(*string_iter == old) *dst_iter = new;
+  }
+
+  return dst;
 }
 
 bool endswith(const char* const str, const char* const suf) {
@@ -130,6 +134,67 @@ char* const trim_virtual_dir(const char* const path, char* vdir) {
     strncpy(vdir, "", 1);
 
     return concrete_path;
+}
+
+char* const escape_chars(const char* const string) {
+  const char* string_iter = string;
+
+  /* Count the number of caracters that sould be escaped */
+  size_t escape_count = 0;
+  while(*string_iter != '\0') {
+    if(strchr("/", *string_iter)) escape_count++;
+    string_iter++;
+  }
+  
+  /* Allocate the escaped string */
+  size_t string_len = string_iter - string;
+  size_t escaped_len = string_len + escape_count*3;
+  char* const escaped = malloc(sizeof(char) * (escaped_len + 1));
+
+  /* Build the escaped string */
+  char* escaped_iter = escaped;
+  char test_string[2] = " ";
+  string_iter = string;
+  for(string_iter = string; *string_iter != '\0'; string_iter++, escaped_iter++) {
+    test_string[0] = *string_iter;
+    if(strchr("/", *string_iter) != NULL) {
+      strcpy(escaped_iter, "%2F");
+      escaped_iter += 2;
+      continue;
+    }
+    *escaped_iter = *string_iter;
+  }
+  *escaped_iter = '\0';
+
+  return escaped;
+}
+
+char* const unescape_chars(const char* const string) {
+  const char* string_iter = NULL;
+
+  /* Count the number of escaped caracters */
+  size_t escaped_count = -1;
+  for(string_iter = string - 1; string_iter != NULL; string_iter = strstr(string_iter + 1, "%2F"))
+    escaped_count++;
+
+  /* Allocate the unescaped string */
+  size_t string_len = strlen(string);
+  size_t unescaped_len = string_len - (escaped_count * 2);
+  char* const unescaped = malloc(sizeof(char) * (unescaped_len + 1));
+
+  /*Build the unescaped string */
+  char* unescaped_iter = unescaped;
+  const char* next_escape = strstr(string, "%2F");
+  for(string_iter = string; *string_iter != '\0'; string_iter++, unescaped_iter++) {
+    if(string_iter == next_escape) {
+      *unescaped_iter = '/';
+      string_iter += 2;
+    } else *unescaped_iter = *string_iter;
+    next_escape = strstr(string_iter, "%2F");
+  }
+  *unescaped_iter = '\0';
+
+  return unescaped;
 }
 
 dirtype_t get_dirtype(const char* const path) {

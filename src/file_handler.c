@@ -25,7 +25,7 @@ void _hfuse_handler_set_enttype(hfuse_handler_t* const h, enttype_t enttype) { h
 void* _hfuse_handler_get_structure(const hfuse_handler_t* const self) { return self->structure; }
 void _hfuse_handler_set_structure(hfuse_handler_t* const self, void* structure) { self->structure = structure; }
 
-void _hfuse_handler_open(hfuse_handler_t* const self) {
+void hfuse_handler_open(hfuse_handler_t* const self) {
     hfsvol* const volume = hfuse_get_context_volume();
     const char* const macpath = hfuse_handler_get_macpath(self);
     enttype_t enttype = _hfuse_handler_get_enttype(self);
@@ -33,6 +33,10 @@ void _hfuse_handler_open(hfuse_handler_t* const self) {
     switch(enttype) {
         case ENTTYPE_DIRECTORY:
         hfsdir* directory = hfs_opendir(volume, macpath);
+        if(directory != NULL) {
+            printf("VOL : %p\n", directory->vol);
+            printf("DIRID : %ld\n", directory->dirid);
+        }
         hfuse_handler_set_directory(self, directory);
         break;
 
@@ -59,22 +63,29 @@ void _hfuse_handler_close(hfuse_handler_t* const self) {
 }
 
 hfuse_handler_t* const hfuse_handler_init(const char* const path, enttype_t enttype) {
+    printf("CALLING hfuse_handler_init(%s)\n", path);
     hfuse_handler_t* self = (hfuse_handler_t*) malloc(sizeof(hfuse_handler_t));
     char* vdir = malloc(sizeof(char) * (HFS_MAX_FLEN + 1));
-    char* concrete_path = trim_virtual_dir(path, vdir);
-    char* macpath = to_mac_path(concrete_path);
+    const char* const concrete_path = trim_virtual_dir(path, vdir);
+    char* macpath = strtr(NULL, concrete_path, '/', ':');
+    const char* const decoded_path = unescape_chars(macpath);
+
+    printf("concrete_path : %s (%ld)\n", concrete_path, strlen(concrete_path));
+    printf("macpath : %s (%ld)\n", macpath, strlen(macpath));
+    printf("decoded_path : %s (%ld)\n", decoded_path, strlen(decoded_path));
     
     dirtype_t dirtype = get_dirtype(vdir);
     
     hfsvol* const volume = hfuse_get_context_volume();
 
-    hfuse_handler_set_macpath(self, macpath);
+    hfuse_handler_set_macpath(self, decoded_path);
     hfuse_handler_set_dirtype(self, dirtype);
     _hfuse_handler_set_enttype(self, enttype);
-    _hfuse_handler_open(self);
+    //hfuse_handler_open(self);
 
-    free(concrete_path);
-    free(vdir);
+    free((void*) concrete_path);
+    free((void*) macpath);
+    free((void*) vdir);
     return self;
 }
 

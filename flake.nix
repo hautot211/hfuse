@@ -27,12 +27,19 @@
       in
     {
       packages.default = hfuse;
-      devShells.default = pkgs.mkShell {
-        inherit buildInputs nativeBuildInputs;
-        packages = [
-          pkgs.valgrind
-          pkgs.gdb
-        ];
+      devShells = {
+        default = pkgs.mkShell {
+          inherit buildInputs nativeBuildInputs;
+          packages = [
+            pkgs.valgrind
+            pkgs.gdb
+          ];
+        };
+        
+        hfuse = pkgs.mkShell {
+          import = [self.devShells.default];
+          packages = [hfuse];
+        };
       };
     }
   );

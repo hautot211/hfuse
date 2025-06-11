@@ -27,6 +27,9 @@ typedef enum : unsigned int {
 hfuse_handler_t* const hfuse_handler_init(const char* const path, enttype_t enttype);
 void hfuse_handler_destroy(hfuse_handler_t* const h);
 
+
+void hfuse_handler_open(hfuse_handler_t* const self);
+
 /* Getters / Setters */
 
 hfsdir* const hfuse_handler_get_directory(const hfuse_handler_t* const h);

@@ -40,10 +40,13 @@ void hfuse_set_file_info_file(struct fuse_file_info* const fi, const hfsfile* co
 // Path helpers
 
 /*
- * Create a path separated by ':' from a path separated by '/' (required for usage of libhfs).
- * A new string is created, path is not modified inplace
+ * Change all occurences of character 'old' to 'new' in 'string'.
+ * Can be used to change create macintosh path by changing '/' to ':'
+ * If 'dst' is NULL, it is mallocd.
+ * Returns the addresss of dst.
+ * Mutation can be done inplace.
  */
-char* const to_mac_path(const char* const path);
+char* const strtr(char* dst, const char* const string, char old, char new);
 
 /*
  * Tests if 'suf' is a suffix of 'str'
@@ -68,6 +71,16 @@ char* const get_parent_directory(const char* const path, char* const buffer);
  * vdir is set to empty string if path does not point to a virtual file or directory.
  */
 char* const trim_virtual_dir(const char* const path, char* vdir);
+
+/*
+ * Escape Linux directory separator (/). It is the only character that libfuse needs to be escaped.
+ */
+char* const escape_chars(const char* const string);
+
+/*
+ * Opposite function of the last function
+ */
+char* const unescape_chars(const char* const string);
 
 /*
  * Return the dir type of an entity

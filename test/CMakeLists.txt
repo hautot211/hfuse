@@ -32,3 +32,4 @@ endfunction()
 
 create_test(hfs_helpers)
 create_test(test2)
+create_test(test3)
