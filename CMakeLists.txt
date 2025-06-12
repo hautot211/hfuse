@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(hfuse)
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+project(hfuse)
 
 include(CTest)
 enable_testing()

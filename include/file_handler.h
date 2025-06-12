@@ -11,13 +11,13 @@
 
 typedef struct hfuse_handler_s hfuse_handler_t;
 
-typedef enum : unsigned int {
+typedef enum {
     DIRTYPE_DATA,
     DIRTYPE_RSRC,
     DIRTYPE_FINF,
 } dirtype_t;
 
-typedef enum : unsigned int {
+typedef enum {
     ENTTYPE_FILE,
     ENTTYPE_DIRECTORY,
 } enttype_t;
