@@ -28,6 +28,9 @@ int main(int argc, char *argv[]) {
 
     hfuse_context_t* const context = hfuse_new_context();
     fuse_opt_parse(&args, context, NULL, hfuse_opt_proc);
+
+    /* Disactivae multithreading */
+    fuse_opt_add_arg(&args, "-s");
     hfuse_fill_context(context);
 
     return fuse_main(args.argc, args.argv, &hfuse_operations, (void*) context);

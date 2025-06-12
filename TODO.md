@@ -6,8 +6,9 @@
 - valgrind              OK (31/05/25)
 - Unit tests ?
 - Debug
-    - 'find mnt -type f |xargs -n1 -d'\n' cat' killing program 
-        - DUE TO MULTI-THREADING, no problem in single-thread mode
+    - 'find mnt -type f |xargs -n1 -d'\n' cat' killing program when runned in multithreaded mode
+        - Might be caused by libhfs
         - Works well in single-threaded
     
 - parse options
+
