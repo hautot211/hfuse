@@ -47,11 +47,5 @@ target_link_libraries(hfuse PRIVATE hfs hfuse_lib)
 install(TARGETS hfuse COMPONENT runtime)
 
 
-add_executable(hello
-  src/hello.c
-)
-target_include_directories(hello PRIVATE include)
-target_link_directories(hello PRIVATE lib)
-target_link_libraries(hello PRIVATE hfs fuse3)
-
 add_subdirectory(${TEST_DIR})
+
