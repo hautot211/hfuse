@@ -70,10 +70,6 @@ hfuse_handler_t* const hfuse_handler_init(const char* const path, enttype_t entt
     char* macpath = strtr(NULL, concrete_path, '/', ':');
     const char* const decoded_path = unescape_chars(macpath);
 
-    printf("concrete_path : %s (%ld)\n", concrete_path, strlen(concrete_path));
-    printf("macpath : %s (%ld)\n", macpath, strlen(macpath));
-    printf("decoded_path : %s (%ld)\n", decoded_path, strlen(decoded_path));
-    
     dirtype_t dirtype = get_dirtype(vdir);
     
     hfsvol* const volume = hfuse_get_context_volume();

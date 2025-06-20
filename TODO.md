@@ -1,6 +1,7 @@
 - Add documentation
 - Implement
     - Failure when mounting non standard HFS filesystem
+    - Virtual directory and virtual files for finder informations
 - Rewrite
     - file handlers again (OO style, virtual classes)
 - valgrind              OK (31/05/25)

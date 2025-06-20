@@ -40,11 +40,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1748958297,
-        "narHash": "sha256-4uQKk421tiYL2mofQpQR82iwZu6aoXXEHBGKOGNtMJk=",
+        "lastModified": 1750342336,
+        "narHash": "sha256-Z+pL8XlqwaWKLLmd16Cg/etApBiqNy6ck5CS/FTlDd8=",
         "owner": "hautot211",
         "repo": "hfsutils",
-        "rev": "0277c0f3a7e4a8ee805d9305bbd6192b438618bf",
+        "rev": "647d98fbb97eb4457c7fe4f51becf41c6f56d5dc",
         "type": "github"
       },
       "original": {

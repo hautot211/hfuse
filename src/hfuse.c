@@ -72,13 +72,20 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
     const char* const mac_path = hfuse_handler_get_macpath(handler);
 
     hfsdirent* const directory_entity = malloc(sizeof(hfsdirent));
+    printf("after malloc : ERRNO : %d\n", errno);
     int hfs_stat_res = hfs_stat(volume, mac_path, directory_entity);
-    
+    printf("after hfs_stat : ERRNO : %d\n", errno);
+    printf("volume : %p, mac_path : %p, directory_entity : %p\n", volume, mac_path, directory_entity);
+
+    dbg();
     
     if(hfs_stat_res == -1) {
+        printf("Freeing directory_entity : %p\n", directory_entity);
+        printf("ERRNO : %d\n", errno);
         free((void*) directory_entity);
         return -ENOENT;
     }
+    dbg();
     
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
@@ -90,7 +97,7 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
         stbuf->st_nlink = 2;
         stbuf->st_size = 4096;
          printf("\t%s is a directory\n", path);
-    } else if(is_symlink(directory_entity)){
+    } else if(is_symlink(directory_entity) && dirtype == DIRTYPE_DATA){
         stbuf->st_mode |= S_IFLNK;
         stbuf->st_mode |= 0440;
         printf("\t%s is a symlink\n", path);
@@ -106,9 +113,13 @@ int hfuse_getattr(const char *path, struct stat * stbuf, struct fuse_file_info *
         stbuf->st_size = current_fork_size(file);
     }
 
+    dbg();
+    printf("ERRNO : %d\n\n", errno);
     // TODO complete stat struct
 
     free((void*) directory_entity);
+    dbg();
+    printf("ERRNO : %d\n\n", errno);
     return 0;
 }
 
@@ -157,7 +168,7 @@ int hfuse_readdir(const char* path, void* buf, fuse_fill_dir_t filler, off_t off
             bool ignore = true;
             do {
                 hfs_readdir_result = hfs_readdir(directory, directory_entity);
-                ignore = is_directory(directory_entity) || is_symlink(directory_entity);
+                ignore = is_directory(directory_entity);
                 if (hfs_readdir_result == -1) {
                     free(directory_entity);
                     if (errno == ENOENT) {

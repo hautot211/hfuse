@@ -23,10 +23,16 @@ hfuse_context_t * const hfuse_init_context(const char* const image_path) {
 }
 
 void hfuse_fill_context(hfuse_context_t* const context) {
+    printf("CALLING hfuse_fill_context\n");
+
+    context->volume = hfs_mount(context->image_path, 0, HFS_MODE_RDONLY | HFS_OPT_2048 | HFS_OPT_NOCACHE | HFS_OPT_ZERO);
+    printf("context->volume : %p\n", context->volume);
+
     hfsvolent* const volume_entity = malloc(sizeof(hfsvolent));
-    hfs_vstat((hfsvol* const) context->volume, volume_entity);
-    context->volume = hfs_mount(context->image_path, 0, HFS_MODE_RDONLY);
+    int hfs_vstat_result = hfs_vstat((hfsvol* const) context->volume, volume_entity);
     context->volume_entity = volume_entity;
+    printf("hfs_vstat_result : %d\n", hfs_vstat_result);
+    printf("context->volume_entity : %p\n", context->volume_entity);
 }
 
 void hfuse_destroy_context(const hfuse_context_t* const context) {

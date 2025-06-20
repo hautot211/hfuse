@@ -11,10 +11,11 @@ A fuse based read-only filesystem for accessing *standard* HFS disk images, read
 
 ## Requirement
 
+- gcc (C11 or later)
 - cmake
 - make
 - libfuse3 (dev)
-- [libhfs](https://github.com/hautot211/hfsutils)
+- [My forked libhfs](https://github.com/hautot211/hfsutils) (fixing some include files)
 
 ## Installation
 
@@ -25,3 +26,12 @@ cmake .
 make
 sudo make install
 ```
+
+## Some informations
+
+- HFS authorizes filenames containing '/', but Linux don't. In that case the program will transform '/' into '%2F'
+- Nothing else is converted, CR is not translated to LF.
+- Symlinks are distinguished from normal files but are not linked to any HFS entity for now.
+- This program runs in single-thread by default because of issues when using libhfs in multithreaded mode.
+
+
