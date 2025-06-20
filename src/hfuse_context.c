@@ -27,7 +27,7 @@ void hfuse_fill_context(hfuse_context_t* const context) {
     printf("CALLING hfuse_fill_context\n");
 
     const int nparts = hfs_nparts(context->image_path);
-    
+    context->volume = NULL;
     if(nparts == -1) {
         printf("No partitions found, trying to read disk image as a partition");
         context->volume = hfs_mount(context->image_path, 0, HFS_MODE_RDONLY);
@@ -35,16 +35,12 @@ void hfuse_fill_context(hfuse_context_t* const context) {
     else {
         for(int curr_part = 1; curr_part <= nparts && context->volume == NULL; curr_part++) {
             printf("Trying to read partition n°%d\n", curr_part);
-            context->volume = hfs_mount(context->image_path, 0, HFS_MODE_RDONLY);
+            context->volume = hfs_mount(context->image_path, curr_part, HFS_MODE_RDONLY);
         }
     }
-    printf("context->volume : %p\n", context->volume);
-
     hfsvolent* const volume_entity = malloc(sizeof(hfsvolent));
     int hfs_vstat_result = hfs_vstat((hfsvol* const) context->volume, volume_entity);
     context->volume_entity = volume_entity;
-    printf("hfs_vstat_result : %d\n", hfs_vstat_result);
-    printf("context->volume_entity : %p\n", context->volume_entity);
 }
 
 void hfuse_destroy_context(const hfuse_context_t* const context) {
