@@ -3,9 +3,7 @@
 set -e
 set -x
 
-apt update
-apt install sudo -y
-
+sudo apt update
 # Installing build dependencies
 sudo apt install cmake build-essential -y
 # Installing dependencies
