@@ -55,8 +55,6 @@ hfuse_context_t * const hfuse_init_context(const char* const image_path) {
 }
 
 void hfuse_fill_context(hfuse_context_t* const context) {
-    printf("CALLING hfuse_fill_context\n");
-
     const int nparts = hfs_nparts(context->image_path);
     context->volume = NULL;
     if(nparts == -1) {

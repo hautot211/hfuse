@@ -19,13 +19,8 @@ A fuse based read-only filesystem for accessing *standard* HFS disk images, read
 
 ## Installation
 
-```bash
-git clone https://github.com/hautot211/hfuse
-cd hfuse
-cmake .
-make
-sudo make install
-```
+If you are on Debian or ubuntu, run the install.sh file (requires libhfs to be installed).
+
 
 ## Some informations
 
